@@ -9,8 +9,8 @@ import numpy as np
 from matplotlib import pyplot as pl
 
 #%%
-if os.path.basename(os.getcwd())!='labor_aso':
-    os.chdir(os.path.join(os.getcwd(),'Downloads','labor_aso'))
+if os.path.basename(os.getcwd())!='mcdonald_tomasula':
+    os.chdir('/Users/catbox/Downloads/labor_aso/mcdonald_tomasula')
 files=glob.glob('*.xlsx')
 
 strikes=pandas.read_excel(files[0],sheet_name=0)
@@ -18,15 +18,6 @@ strikes=strikes.iloc[:min(np.where(np.all(strikes.isnull(),1))[0]),:]
 
 campaigns=pandas.read_excel(files[-1],sheet_name=0)
 campaigns=campaigns.iloc[:min(np.where(np.all(campaigns.isnull(),1))[0]),:]
-
-#%% only pull top 10
-
-srch=campaigns['Employer(s)'].str.contains('University')
-tbl=campaigns[srch]
-tbl=tbl.sort_values(by='Bargaining Unit Size',ascending=False)
-tbl=tbl.iloc[:10,:-1]
-tbl['Voter Turnout (%)']=round(tbl['Voter Turnout (%)'],3)*100
-tbl.to_excel('table1.xlsx',index=False)
 
 #%% strikes edit
 tbl=strikes
@@ -94,8 +85,38 @@ pl.yticks(np.arange(0,len(ND)),ND.n)
 pl.savefig('infog.pdf')
 
 
-        
 
+#%% campaign inforgraphic
+tbl=campaigns
+nd=[]
+for x in tbl.iterrows():
+    nd.append({'n':x[1].Union+'--'+x[1].Employer,'t':int(x[1].Year),'y0':int(x[1]['Bargaining Unit Size']), \
+               'y1':int(x[1]['Yes Votes']),'y2':int(x[1]['No Votes'])})
+ND=pandas.DataFrame.from_records(nd)
+absent=ND.y0-(ND.y1+ND.y2)
+ND['absent']=absent
+#%%
+count=0
+pl.figure(figsize=(10,20))
+
+for x in ND.iterrows():
+    pl.barh(count,x[1].y1+x[1].absent/2,edgecolor='k',facecolor='k')
+    pl.barh(count,x[1].absent/2,edgecolor='k',facecolor='w')
+    if x[1].y1>1000:
+        pl.text(x[1].y1/2+x[1].absent/2,count,x[1].y1,color='w',ha='center',fontsize=8,va='center')
+    pl.barh(count,-x[1].y2-x[1].absent/2,edgecolor='k',facecolor='k')
+    pl.barh(count,x[1].absent/-2,edgecolor='k',facecolor='w')
+    if x[1].y2>1000:
+        pl.text(-x[1].y2/2-x[1].absent/2,count,x[1].y2,color='#999999',ha='center',fontsize=8,va='center')
+    pl.text(-6000,count,x[1].t,ha='center')
+    if x[1].y1<x[1].y2:
+        pl.text(7500,count,'*')
+    count+=1
+pl.xlim(-7000,15000)
+pl.yticks(np.arange(0,len(ND)),ND.n)
+
+pl.savefig('infog2.pdf')
+    
 
 
 
