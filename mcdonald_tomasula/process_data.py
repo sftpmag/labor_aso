@@ -60,22 +60,28 @@ for x in tbl.iterrows():
         p=np.nan
     nd.append({'n':x[1].iloc[0]+'--'+x[1].iloc[1],'y':y,'l':l,'s':s,'p':p})
 ND=pandas.DataFrame.from_records(nd)
-ND['sn']=ND.s/(np.max(ND.s)-np.min(ND.s))
-ND['pn']=ND.p/(np.max(ND.s)-np.min(ND.s))
+ND['sn']=ND.s/(np.max(ND.s)-np.min(ND.s))*200
+ND['pn']=ND.p/(np.max(ND.s)-np.min(ND.s))*200
 ND['ln']=ND.l/(np.max(ND.l)-np.min(ND.l))
+
+ND['sn']=np.clip(ND['sn'],a_min=0,a_max=50)
+ND['pn']=np.clip(ND['pn'],a_min=0,a_max=50)
+
 
 ND=ND.sort_values(by='y',ascending=True)
 
-#%%
+#%
 count=-1
 pl.figure(figsize=(10,20))
 for x in ND.iterrows():
     count+=1
     pl.plot([50,50+x[1].l],(count,count),'k-',lw=3)
-    pl.plot(0,count,'wo',ms=x[1].sn*50,mfc='k')
-    pl.plot(20,count,'wo',ms=x[1].pn*50,mfc='k')
-    if x[1].sn>0.3:
+    pl.plot(0,count,'wo',ms=x[1].sn,mfc='k')
+    pl.plot(20,count,'wo',ms=x[1].pn,mfc='k')
+    if x[1].sn>15:
         pl.text(0,count,str(round(x[1].s/1000))+'k',color='w',ha='center',va='center',fontsize=8)
+    if x[1].pn>15:
+        pl.text(20,count,str(round(x[1].p/1000))+'k',color='w',ha='center',va='center',fontsize=8)
     if x[1].ln>0.2:
         pl.text(np.median((50,50+x[1].l)),count+0.1,str(int(x[1].l))+' d',ha='center')
     pl.text(-30,count,x[1].y)
