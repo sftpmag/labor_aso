@@ -50,20 +50,9 @@ D['Overall Pay']=D['Overall Pay'].str.replace(',','')
 D['pay']=D['Overall Pay'].str.replace('$','').astype(int)
 D=D[(D.pay<100000)&(D.pay>5000)]
 
+
 #%%
 bs=1000
-
-# x=D.pay[D.STEM]
-# h=np.histogram(x,np.arange(0,90000,bs),density=True)
-# pl.plot(h[1][:-1],h[0],'k',lw=2,label='STEM')
-# x=D.pay[~D.STEM]
-# h=np.histogram(x,np.arange(0,90000,bs),density=True)
-# pl.plot(h[1][:-1],h[0],color='#999999',lw=2,label='Non-STEM')
-# pl.legend()
-# pl.xlabel('Stipend (USD)')
-# pl.ylabel('Relative proportion')
-# pl.yticks([])
-# pl.ylim(0,0.8e-4)
 
 pl.figure(figsize=(10,4))
 x=D.pay[D.STEM]
@@ -81,7 +70,7 @@ pl.ylabel('Count')
 pl.legend()
 pl.title('STEM Departments')
 
-pl.savefig('stipdent1.pdf')
+# pl.savefig('stipdent1.pdf')
 
 
 
@@ -95,24 +84,34 @@ h=np.histogram(x,np.arange(0,100000,bs),density=False)
 pl.plot(h[1][:-1],h[0],'k',label='With Union')
 x=D.pay[~D.STEM&~D.Union]
 h=np.histogram(x,np.arange(0,100000,bs),density=False)
-pl.plot(h[1][:-1],h[0],color='#999999',label='WIthout Union')
+pl.plot(h[1][:-1],h[0],color='#999999',label='Without Union')
 pl.xlim(0,80000)
 pl.legend()
 pl.title('non-STEM Departments')
 
-df=sum(D.STEM)-2
-t,p=ttest_ind(D.pay[D.STEM&D.Union],D.pay[D.STEM&~D.Union])
-pl.text(35000,80,'Union effect (STEM): T(%.0f)=%.1f, p=%.1e'%(df,t,p))
+# df=sum(D.STEM)-2
+# t,p=ttest_ind(D.pay[D.STEM&D.Union],D.pay[D.STEM&~D.Union])
+# pl.text(35000,80,'Union effect (STEM): T(%.0f)=%.1f, p=%.1e'%(df,t,p))
 
-df=sum(~D.STEM)-2
-t,p=ttest_ind(D.pay[~D.STEM&D.Union],D.pay[~D.STEM&~D.Union])
-pl.text(35000,70,'Union effect (none-STEM): T(%.0f)=%.1f, p=%.1e'%(df,t,p))
+# df=sum(~D.STEM)-2
+# t,p=ttest_ind(D.pay[~D.STEM&D.Union],D.pay[~D.STEM&~D.Union])
+# pl.text(35000,70,'Union effect (none-STEM): T(%.0f)=%.1f, p=%.1e'%(df,t,p))
 
-df=len(D)-2
-t,p=ttest_ind(D.pay[D.STEM],D.pay[~D.STEM])
-pl.text(35000,60,'STEM effect (regardless of Union): T(%.0f)=%.1f, p=%.1e'%(df,t,p))
+# df=len(D)-2
+# t,p=ttest_ind(D.pay[D.STEM],D.pay[~D.STEM])
+# pl.text(35000,60,'STEM effect (regardless of Union): T(%.0f)=%.1f, p=%.1e'%(df,t,p))
 
 pl.xlabel('Stipend (USD)')
 pl.ylabel('Count')
 
-pl.savefig('stipdent2.pdf')
+# pl.savefig('stipdent2.pdf')
+
+#%%
+import statsmodels.api as sm
+from statsmodels.formula.api import ols
+
+#perform two-way ANOVA
+model = ols('pay ~ C(Union) + C(STEM) + C(Union):C(STEM)', data=D).fit()
+sm.stats.anova_lm(model, typ=2)
+
+
